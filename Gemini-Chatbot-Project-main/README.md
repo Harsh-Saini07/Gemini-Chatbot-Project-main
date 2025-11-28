@@ -96,7 +96,7 @@ Type a message and press Enter to send.
 
 # Credits:
 
-Developed by Ritik Sharma using JavaScript and Google AI Gemini API.
+Developed by Harsh Saini using JavaScript and Google AI Gemini API.
 
 # License:
 
