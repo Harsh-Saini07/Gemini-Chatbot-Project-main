@@ -9,7 +9,8 @@ const themeToggle = document.querySelector("#theme-toggle-btn");
 // For API go to google AI for Developers site
 // API Setup
 const API_KEY = "AIzaSyDP1DSHN3Tm-QE79Xw1CilFtxoua9ChK7c";
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+const API_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash"];
+const buildApiUrl = (model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`;
 
 let typingInterval , controller;
 const chatHistory = [];
@@ -24,7 +25,7 @@ const createMsgElement = (content,...classes)=>{
     return div;
 }
 // Scroll to the bottom of the container
-const scrollToBottom = ()=> container.scrollTo({top:container.scrollHeight,behaviour:"smooth"});
+const scrollToBottom = ()=> container.scrollTo({top:container.scrollHeight, behavior:"smooth"});
 /* How Above method works:
 
     container.scrollTo()
@@ -107,23 +108,48 @@ const generateResponse = async (botMsgDiv)=>{
     });/* This will include the attached file data along with the message in the chat history , aligned
         with Gemini required parameters. */
         try{
-            //send the chat history to the API to get a response
-            const response = await fetch(API_URL,{
-                method:"POST",
-                headers: {"Content-Type" : "application/json"},
-                body: JSON.stringify({ 
-                    model:"gemini-1.5-flash",
-                    contents: chatHistory }),
-                signal: controller.signal //The AbortController object has a signal property (controller.signal)
-                // that can be passed to functions that support aborting.
-                // const signal = controller.signal; gets the signal that we pass to the fetch request.
-            });
-    
-            const data = await response.json();
-            if(!response.ok) throw new Error(data.error.message);
-    
+            if (!API_KEY || API_KEY.trim().length < 20) {
+                throw new Error("Missing or invalid Gemini API key. Add a valid API key in app2.js.");
+            }
+
+            // Try preferred model first, then fallback.
+            let data = null;
+            let lastError = null;
+
+            for (const model of API_MODELS) {
+                const response = await fetch(buildApiUrl(model),{
+                    method:"POST",
+                    headers: {"Content-Type" : "application/json"},
+                    body: JSON.stringify({ contents: chatHistory }),
+                    signal: controller.signal //The AbortController object has a signal property (controller.signal)
+                    // that can be passed to functions that support aborting.
+                    // const signal = controller.signal; gets the signal that we pass to the fetch request.
+                });
+
+                data = await response.json();
+                if (response.ok) {
+                    break;
+                }
+
+                lastError = data?.error?.message || `Request failed with status ${response.status}.`;
+                data = null;
+            }
+
+            if (!data) {
+                throw new Error(lastError || "Unable to get response from Gemini API.");
+            }
+
+            const responseText = data?.candidates?.[0]?.content?.parts
+                ?.map((part) => part.text || "")
+                .join(" ")
+                .replace(/\*\*([^*]+)\*\*/g, "$1")
+                .trim();
+
+            if (!responseText) {
+                throw new Error("No text response received from Gemini. Check the Network tab for API details.");
+            }
+
             //Process the response text and display with typing effect
-            const responseText = data.candidates[0].content.parts[0].text.replace(/\*\*([^*]+)\*\*/g, "$1").trim(); // response contains the markdown formatting , so we w'll remove the extra asterisks since we are not using them.
             typingEffect(responseText,textElement,botMsgDiv);
     
             chatHistory.push({role: "model" , parts: [{ text: responseText }] });// Adding the model's response to chat history for better interaction.
@@ -236,7 +262,7 @@ document.querySelector("#stop-response-btn").addEventListener("click",()=>{
     userData.file = {}; 
     controller?.abort();  // If controller.abort() is called, the fetch request is canceled
     clearInterval(typingInterval);
-    chatsContainer.querySelector(".bot-message.loading").classList.remove("loading");
+    chatsContainer.querySelector(".bot-message.loading")?.classList.remove("loading");
     document.body.classList.remove("bot-responding");
 })
 

@@ -190,7 +190,9 @@ body.chats-active .container :where(.app-header,.suggestions){
 }
 
 .chats-container .user-message .img-attachment{
-    width: 50%;
+    width: min(50%, 420px);
+    max-width: 100%;
+    height: auto;
     margin-top:-7px;
     border-radius: 13px 3px 13px 13px;
 }
