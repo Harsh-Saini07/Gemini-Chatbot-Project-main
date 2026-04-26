@@ -27,20 +27,29 @@ The Gemini AI Chatbot is a web-based chatbot interface that allows users to comm
 
 . Google AI Gemini API(For API go to google AI for Developers site)
 
-# Setup & Installation:
+# Setup & Installation (VS Code Local):
 
-Clone the repository:git clone https://github.com/your-repo/gemini-ai-chatbot.git
+1. Clone the repository:
+   `git clone https://github.com/your-repo/gemini-ai-chatbot.git`
 
-Navigate to the project directory:
+2. Navigate to the project directory:
+   `cd gemini-ai-chatbot`
 
-cd gemini-ai-chatbot
+3. Install dependencies:
+   `npm install`
 
-Open the project in a code editor (e.g., VS Code).
+4. Create your env file:
+   - Copy `.env.example` to `.env`
+   - Set `GEMINI_API_KEY=your_real_key`
 
-Open index.html in a browser to run the chatbot.
+5. Run locally:
+   `npm start`
+
+6. Open in browser:
+   `http://localhost:3000/index2.html`
 
 # API Integration:
-The chatbot integrates with Google AI Gemini API to generate responses. Ensure you have a valid API key and update the following line in script.js: const API_KEY = "YOUR_API_KEY";
+The app now uses a local Node/Express endpoint (`/api/generate`) so your API key stays in `.env` and is not exposed in frontend JavaScript.
 
 # Key Functionalities:
 
